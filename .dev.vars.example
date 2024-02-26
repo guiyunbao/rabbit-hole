@@ -1,0 +1,8 @@
+TXC_ID = ""
+TXC_SECRET=""
+
+GH_REPO_NAME=""
+GH_APP_ID = ""
+GH_APP_PRIV_KEY="" # base64 encoded PKCS #8 private key
+GH_INSTALLATION_ID=""
+GH_HOOK_SECRET=""

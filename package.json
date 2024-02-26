@@ -1,0 +1,19 @@
+{
+  "name": "rabbit-hole",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy --keep-vars --minify",
+    "start": "wrangler dev"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230419.0",
+    "@types/md5": "^2.3.5",
+    "typescript": "^5.0.4",
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "md5": "^2.3.0",
+    "octokit": "^3.1.2"
+  }
+}

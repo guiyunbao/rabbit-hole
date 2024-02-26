@@ -1,0 +1,6 @@
+# TypeScript
+node_modules/
+
+# Cloudflare Workers
+.wrangler/
+.dev.vars
