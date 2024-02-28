@@ -43,8 +43,8 @@ export function makeGitHubIssue(txc: TuXiaoCao, topic: any) {
     }
 
     default: {
-      title = makeGitHubIssueTitle(topic);
       content = topic.content;
+      title = makeGitHubIssueTitle(content);
     }
   }
 
@@ -66,8 +66,8 @@ ${makeRHDataField(topic)}
   };
 }
 
-function makeGitHubIssueTitle(topic: any): string {
-  return topic.content.slice(0, 20);
+function makeGitHubIssueTitle(content: string): string {
+  return content.slice(0, 20);
 }
 
 export function makeGitHubComment(reply: any) {
@@ -78,23 +78,8 @@ export function makeGitHubComment(reply: any) {
       images += `![](${image.original_url})\n`;
     } catch (e) {}
   }
-  let parent = '';
-  if (reply.parent != null) {
-    parent = `  
-回复对象：${reply.parent_reply_id}
 
----
-
-回复对象【${reply.parent.nick_name}】原文：
-\`\`\`
-${reply.parent.content}
-\`\`\`
-
----
-`;
-  }
-
-  const template = `回复ID：${reply.id}${parent}
+  const template = `回复ID：${reply.id}
 
 ${reply.created_at}  
 【${reply.nick_name}】(${reply.user_id})
@@ -119,33 +104,33 @@ ${JSON.stringify(data)}
 `;
 }
 
-export async function pollingTXC(txc: TuXiaoCao, gh: GitHub) {
-  const topics = await txc.getTopics({ count: 5 });
-  for (const topic of topics) {
-    console.log(`--- Start Processing txc/${topic.id} ---`);
+// export async function pollingTXC(txc: TuXiaoCao, gh: GitHub) {
+//   const topics = await txc.getTopics({ count: 5 });
+//   for (const topic of topics) {
+//     console.log(`--- Start Processing txc/${topic.id} ---`);
 
-    let issue = await createIssueWithTopicId(gh, txc, topic.id);
-    console.log(`Issue: ${issue.html_url}`);
-    if (!Array.isArray(topic.replies_all)) {
-      for (const replyId in topic.replies_all) {
-        const reply = topic.replies_all[replyId].self;
-        console.log(`Reply: ${reply.id}`);
-        let exist = await gh.existIssueComment(reply.id);
-        if (exist) {
-          console.log(`Exist: ${exist.html_url}`);
-          continue;
-        }
+//     let issue = await createIssueWithTopicId(gh, txc, topic.id);
+//     console.log(`Issue: ${issue.html_url}`);
+//     if (!Array.isArray(topic.replies_all)) {
+//       for (const replyId in topic.replies_all) {
+//         const reply = topic.replies_all[replyId].self;
+//         console.log(`Reply: ${reply.id}`);
+//         let exist = await gh.existIssueComment(reply.id);
+//         if (exist) {
+//           console.log(`Exist: ${exist.html_url}`);
+//           continue;
+//         }
 
-        let comment = makeGitHubComment(reply);
-        let ghComment = await gh.client.request({
-          method: 'POST',
-          url: issue.url + '/comments',
-          data: { body: comment },
-        });
-        console.log(`Comment: ${ghComment.data.html_url}`);
-      }
-    }
+//         let comment = makeGitHubComment(reply);
+//         let ghComment = await gh.client.request({
+//           method: 'POST',
+//           url: issue.url + '/comments',
+//           data: { body: comment },
+//         });
+//         console.log(`Comment: ${ghComment.data.html_url}`);
+//       }
+//     }
 
-    console.log(`--- End Processing txc/${topic.id} ---`);
-  }
-}
+//     console.log(`--- End Processing txc/${topic.id} ---`);
+//   }
+// }

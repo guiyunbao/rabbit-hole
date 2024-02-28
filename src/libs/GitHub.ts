@@ -85,4 +85,12 @@ export class GitHub {
 
     return ghIssue.data;
   }
+
+  async createIssueComment(issue: { url: string }, comment: string) {
+    let ghComment = await this.client.request(`POST ${issue.url}/comments`, {
+      body: comment,
+    });
+
+    return ghComment.data;
+  }
 }

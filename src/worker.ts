@@ -18,8 +18,8 @@
 
 import { githubRoute as githubWebhook } from './routes/webhooks/github';
 import { statusRoute } from './routes/status';
-import { pollingTXC } from './controllers/txc';
 import { setupTuXiaoCao, setupGitHub } from './utils';
+import { txcRoute as txcWebhook } from './routes/webhooks/txc';
 
 export default {
   async fetch(request: any, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -28,9 +28,7 @@ export default {
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
-    const txc = await setupTuXiaoCao(env);
-    const gh = await setupGitHub(env);
-    ctx.waitUntil(pollingTXC(txc, gh));
+    //
   },
 };
 
@@ -42,6 +40,8 @@ async function handle(request: any, env: Env, ctx: ExecutionContext): Promise<Re
     switch (reqPath) {
       case '/webhooks/github':
         return githubWebhook(request, env, ctx);
+      case '/webhooks/txc':
+        return txcWebhook(request, env, ctx);
       case '/status':
         return statusRoute(request, env, ctx);
       default:

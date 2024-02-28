@@ -18,18 +18,14 @@
 
 import { GitHub } from '../libs/GitHub';
 import { TuXiaoCao } from '../libs/TuXiaoCao';
-import { makeGitHubIssue } from './txc';
+import { makeGitHubComment, makeGitHubIssue } from './txc';
 
 export async function findIssueWithTopicId(gh: GitHub, txc: TuXiaoCao, topicId: string) {
   let link = txc.makeTopicURL(topicId);
   let issues = await gh.searchIssues(link);
-  return issues;
-}
 
-export async function createIssueWithTopicId(gh: GitHub, txc: TuXiaoCao, topicId: string) {
-  let exist = await findIssueWithTopicId(gh, txc, topicId);
-  if (exist.total_count > 0) {
-    let issueIndex = exist.items.findIndex(function (issue) {
+  if (issues.total_count > 0) {
+    let issueIndex = issues.items.findIndex(function (issue) {
       // Ensure the txcId exist in the RH field of the issue body
       let rhFieldPattern = new RegExp('<RH>\r?\n?([\\s\\S]*)\r?\n?</RH>');
       let match = issue.body?.match(rhFieldPattern);
@@ -40,8 +36,16 @@ export async function createIssueWithTopicId(gh: GitHub, txc: TuXiaoCao, topicId
       return false;
     });
     if (issueIndex !== -1) {
-      return exist.items[issueIndex];
+      return issues.items[issueIndex];
     }
+  }
+  return null;
+}
+
+export async function createIssueWithTopicId(gh: GitHub, txc: TuXiaoCao, topicId: string) {
+  let exist = await findIssueWithTopicId(gh, txc, topicId);
+  if (exist !== null) {
+    return Promise.reject(`Issue already exists for txc topic id: ${topicId} -> ${exist.html_url}`);
   }
 
   let topic = await txc.getTopicOnly(topicId);
@@ -53,9 +57,12 @@ export async function createIssueWithTopicId(gh: GitHub, txc: TuXiaoCao, topicId
   return await gh.createIssue(issue);
 }
 
-export async function createIssueCommentWithReplyId(gh: GitHub, txc: TuXiaoCao, replyId: string) {
-  let exist = await gh.searchIssues(replyId);
-  if (exist.total_count > 0) {
-    return exist.items[0];
+export async function createIssueCommentWithTopicId(gh: GitHub, txc: TuXiaoCao, topicId: string, reply: any) {
+  let issue = await findIssueWithTopicId(gh, txc, topicId);
+  if (issue === null) {
+    return Promise.reject(`Issue not found for txc topic id: ${topicId}`);
   }
+
+  let comment = makeGitHubComment(reply);
+  return await gh.createIssueComment(issue, comment);
 }
